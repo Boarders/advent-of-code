@@ -5,7 +5,7 @@ import Data.List (dropWhile)
 main :: IO ()
 main =
   do
-    let range = fmap show ([254032 .. 789860] :: [Int])
+    let range = ([254032 .. 789860] :: [Int])
     print $ puzzle1 range
     print $ puzzle2 range
 
@@ -30,8 +30,8 @@ criteria1 = (&&) <$> increasing <*> equalAdjacent
 criteria2 :: String -> Bool
 criteria2 = (&&) <$> increasing <*> twoEqualAdjacent
 
-puzzle1 :: [String] -> Int
-puzzle1 = length . filter criteria1
+puzzle1 :: [Int] -> Int
+puzzle1 = length . filter (criteria1 . show)
 
-puzzle2 :: [String] -> Int
-puzzle2 = length . filter criteria2
+puzzle2 :: [Int] -> Int
+puzzle2 = length . filter (criteria2 . show)
