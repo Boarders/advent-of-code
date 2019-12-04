@@ -1,0 +1,22 @@
+cabal-version:      2.4
+category:           Languages
+build-type:         Simple
+name:               Day4
+synopsis:           Advent of Code 2019 Day 4
+version:            0.1.0
+
+
+executable day4
+  default-language: Haskell2010
+
+  main-is:
+    Main.hs
+
+  ghc-options:
+    -threaded -rtsopts -O2 -fobject-code -with-rtsopts=-T -Wall
+
+  hs-source-dirs:
+    app/
+
+  build-depends:
+      base
