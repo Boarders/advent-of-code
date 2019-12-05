@@ -1,0 +1,34 @@
+cabal-version:      2.4
+category:           Languages
+build-type:         Simple
+name:               Day5
+synopsis:           Advent of Code 2019 Day 5
+version:            0.1.0
+
+
+executable day5
+  default-language: Haskell2010
+
+  main-is:
+    Day5.hs
+
+  ghc-options:
+    -threaded -rtsopts -O2 -fobject-code -with-rtsopts=-T -Wall
+
+  hs-source-dirs:
+    app/
+
+  build-depends:
+      base
+    , megaparsec
+        ^>= 7.0.5
+    , extra
+
+        ^>= 1.6.18
+    , text
+        ^>=1.2.3
+    , vector 
+        ^>= 0.12.0.3
+    , writer-cps-mtl
+        ^>= 0.1.1.6
+
