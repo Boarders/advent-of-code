@@ -20,15 +20,7 @@ executable day5
 
   build-depends:
       base
-    , megaparsec
-        ^>= 7.0.5
-    , extra
-
-        ^>= 1.6.18
     , text
         ^>=1.2.3
-    , vector 
+    , vector
         ^>= 0.12.0.3
-    , writer-cps-mtl
-        ^>= 0.1.1.6
-
