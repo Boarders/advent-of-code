@@ -1,0 +1,28 @@
+cabal-version:      2.4
+category:           Languages
+build-type:         Simple
+name:               Day9
+synopsis:           Advent of Code 2019 Day 9
+version:            0.1.0
+
+
+executable day9
+  default-language: Haskell2010
+
+  main-is:
+    Day9.hs
+
+  ghc-options:
+    -threaded -rtsopts -O2 -fobject-code -with-rtsopts=-T -Wall
+
+  hs-source-dirs:
+    app/
+
+  build-depends:
+      base
+    , text
+        ^>=1.2.3
+    , unboxed-ref
+        ^>= 0.4.0.0
+    , vector
+        ^>= 0.12.0.3
