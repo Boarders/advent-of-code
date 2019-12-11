@@ -5,9 +5,8 @@
 module Main where
 
 import           Control.Monad.ST
-import           Data.Bits
-import           Data.STRef.Unboxed
 import           Data.STRef
+import           Data.STRef.Unboxed
 import qualified Data.Text                   as Text
 import qualified Data.Text.IO                as IO
 import qualified Data.Vector.Unboxed         as V hiding (head)
@@ -19,35 +18,18 @@ main :: IO ()
 main =
   do
     inputProg <- readInput
-    print $ puzzle1 inputProg
-    print $ puzzle1 example
-    print $ puzzle1 example2
-    print $ puzzle1 example3
-    print $ puzzle1 example4
-    print $ puzzle1 [109, -1, 204, 1, 99]
+    putStrLn "puzzle 1: "
+    putStrLn $ (replicate 10 ' ') <> (show $ puzzle1 inputProg)
+    putStrLn "puzzle 2: "
+    putStrLn $ (replicate 10 ' ') <> (show $ puzzle2 inputProg)
 
 
 puzzle1 :: [Int] -> [Int]
 puzzle1 programInput =  outputLoop programInput [1]
 
 
-puzzle2 :: [Int] -> Int
-puzzle2 program = undefined
-
-
--- |
--- Run program code with inputs returning the output regardless
--- of whether the program halted.
-runCode :: [Int] -> [Int] -> Int
-runCode  programCode inputs = undefined
-  where
-    result :: [Int]
-    result =
-      runST
-        do
-          mv      <- toMVector programCode
-          program <- initialiseProgram mv
-          runProgram program inputs
+puzzle2 :: [Int] -> [Int]
+puzzle2 programInput = outputLoop programInput [2]
 
 
 data Program s = Program
@@ -145,7 +127,8 @@ runProgram Program{..} = go []
             do
             v <- V.unsafeFreeze machineState
             error $ unlines $ ["incorrect opcode: " <> show n
-                              , "curr input:      " <> show currInput
+                              , "curr input:      " <> show currInputs
+                              , "curr outputs:    " <> show currOutputs
                               , "address:         " <> show address
                               , "instruction:     " <> show instruction
                               , "machine state:   " <> show v
@@ -160,11 +143,8 @@ inputCode blockStart input modes relativeBase mvRef =
   do
     mv      <- readSTRef mvRef
     address <- MV.read mv (blockStart + 1)
-    let writeMode = getDigit 0 modes
-    case writeMode of
-      0 -> dynamicWrite mvRef address input
-      2 -> dynamicWrite mvRef (address + relativeBase) input
-      _ -> error "input ahh"
+    modeWrite modes 0 address relativeBase input mvRef
+
 
 
 outputCode :: Int -> Int -> Int -> MVector s Int -> ST s Int
@@ -174,13 +154,6 @@ outputCode blockStart modes relativeBase mv  =
     value   <- modeRead modes 0 address relativeBase mv
     pure value
 
-
-baseCode :: Int -> Int -> Int -> MVector s Int -> ST s Int
-baseCode blockStart modes relativeBase  mv =
-  do
-    address <- MV.read mv (blockStart + 1)
-    value   <- modeRead modes 0 address relativeBase mv
-    pure value
 
 jumpCode :: (Int -> Bool) -> Int -> Int -> Int -> MVector s Int -> ST s Int
 jumpCode prop blockStart modes relativeBase mv =
@@ -203,11 +176,7 @@ binCode op blockStart modes relativeBase mvRef =
     firstVal  <- modeRead modes 0 first  relativeBase mv
     secondVal <- modeRead modes 1 second relativeBase mv
     let newVal = firstVal `op` secondVal
-    let writeMode = getDigit 2 modes
-    case writeMode of
-      0 -> dynamicWrite mvRef third newVal
-      2 -> dynamicWrite mvRef (third + relativeBase) newVal
-      _ -> error "ahh"
+    modeWrite modes 2 third relativeBase newVal mvRef
 
 
 addCode, mulCode, leCode, eqCode :: Int -> Int -> Int ->  STRef s (MVector s Int) -> ST s ()
@@ -216,6 +185,13 @@ mulCode = binCode (*)
 leCode  = binCode (\x y -> if x < y  then 1 else 0)
 eqCode  = binCode (\x y -> if x == y then 1 else 0)
 
+
+baseCode :: Int -> Int -> Int -> MVector s Int -> ST s Int
+baseCode blockStart modes relativeBase  mv =
+  do
+    address <- MV.read mv (blockStart + 1)
+    value   <- modeRead modes 0 address relativeBase mv
+    pure value
 
 -------------
 -- Utility --
@@ -228,13 +204,27 @@ getDigit modes unitPosition =
   in
     (modes `mod` (decimalPosition * 10)) `div` decimalPosition
 
+modeWrite :: (MV.Unbox a) => Int -> Int -> Int -> Int -> a -> STRef s (MVector s a) -> ST s ()
+modeWrite modes unitPosition ind relativeBase newVal mvRef =
+  let
+    writeMode = getDigit modes unitPosition
+  in
+    case writeMode of
+        0 -> dynamicWrite mvRef ind                  newVal
+        2 -> dynamicWrite mvRef (ind + relativeBase) newVal
+        _ -> error $ "Received mode outside range {0, 2} in write mode: " <> show writeMode
+
+
 modeRead :: Int -> Int -> Int -> Int -> MVector s Int -> ST s Int
 modeRead modes unitPosition ind relativeBase mv =
-  case getDigit modes unitPosition of
-    0 -> readWithDefault 0 mv ind
-    1 -> pure ind
-    2 -> readWithDefault 0 mv (ind + relativeBase)
-    _ -> error "mode read: to do"
+  let
+    readMode = getDigit modes unitPosition
+  in
+    case readMode of
+      0 -> readWithDefault 0 mv ind
+      1 -> pure ind
+      2 -> readWithDefault 0 mv (ind + relativeBase)
+      _ -> error $ "Received mode outside range {0, 1, 2} in read mode: " <> show readMode
 
 
 dynamicWrite :: (MV.Unbox a) => STRef s (MVector s a) -> Int -> a  -> ST s ()
@@ -244,7 +234,7 @@ dynamicWrite mvRef ind val =
     let maxInd = MV.length mv - 1
     if ind > maxInd then
       do
-        let growLength = max (ind - maxInd) ind
+        let growLength = max (ind - maxInd) maxInd
         mv' <- MV.grow mv growLength
         MV.write mv' ind val
         writeSTRef mvRef mv'
