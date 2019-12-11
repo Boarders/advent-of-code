@@ -12,6 +12,10 @@ import qualified Data.Text.IO                as IO
 import qualified Data.Vector.Unboxed         as V hiding (head)
 import           Data.Vector.Unboxed.Mutable (MVector)
 import qualified Data.Vector.Unboxed.Mutable as MV
+import Pipes (Pipe, lift, (>->), Producer)
+import qualified Pipes                       as Pipes
+import qualified Pipes.Prelude               as Pipes
+import Data.Foldable (traverse_)
 
 
 main :: IO ()
@@ -52,83 +56,87 @@ initialiseProgram machineState  =
 
 
 outputLoop :: [Int] -> [Int] -> [Int]
-outputLoop programInput input =
-    runST
-      do
-        mv       <- toMVector programInput
-        prog     <- initialiseProgram mv
-        outputs  <- runProgram prog input
-        pure (reverse outputs)
+outputLoop programInput inputs = runST $ getResults
+  where
+    getResults :: forall s . ST s [Int]
+    getResults = Pipes.toListM runPipe
+
+    runPipe :: forall s . Producer Int (ST s) ()
+    runPipe =
+        do
+          mv       <- lift $ toMVector programInput
+          prog     <- lift $ initialiseProgram mv
+          traverse_ (\i -> Pipes.yield i >-> (runProgram prog)) inputs
 
 -- |
 -- This runs the program updating the address pointer and the machine state
 -- and giving back the output where a Right value means the program has
 -- reached a termination state and a Left value is an output code
-runProgram :: forall s . Program s -> [Int]  -> ST s ([Int])
-runProgram Program{..} = go []
+runProgram :: forall s . Program s -> Pipe Int Int (ST s) ()
+runProgram Program{..} = go
   where
-    go :: [Int] -> [Int] -> ST s [Int]
-    go currOutputs currInputs@(~(currInput : nextInputs)) =
+    go :: Pipe Int Int (ST s) ()
+    go =
       do
-        address      <- readSTRefU addressRef
-        machineState <- readSTRef  machineStateRef
-        relativeBase <- readSTRefU relativeBaseRef
-        instruction <- MV.read machineState  address
+        address      <- lift $ readSTRefU addressRef
+        machineState <- lift $ readSTRef  machineStateRef
+        relativeBase <- lift $ readSTRefU relativeBaseRef
+        instruction  <- lift $ MV.read machineState  address
         let (modes, opCode) = instruction `divMod` 100
         case opCode of
           1  ->
             do
-              addCode address modes relativeBase machineStateRef
-              modifySTRefU addressRef (+ 4)
-              go currOutputs currInputs
+              lift $ addCode address modes relativeBase machineStateRef
+              lift $ modifySTRefU addressRef (+ 4)
+              go
           2  ->
             do
-              mulCode address modes relativeBase machineStateRef
-              modifySTRefU addressRef (+ 4)
-              go currOutputs currInputs
+              lift $ mulCode address modes relativeBase machineStateRef
+              lift $ modifySTRefU addressRef (+ 4)
+              go
           3 ->
             do
-              inputCode address currInput modes relativeBase  machineStateRef
-              modifySTRefU addressRef (+ 2)
-              go currOutputs nextInputs
+              currInput <- Pipes.await
+              lift $ inputCode address currInput modes relativeBase  machineStateRef
+              lift $ modifySTRefU addressRef (+ 2)
+              go
           4 ->
             do
-              output <- outputCode address modes relativeBase machineState
-              modifySTRefU addressRef (+ 2)
-              go (output : currOutputs) currInputs
+              output <- lift $ outputCode address modes relativeBase machineState
+              lift $ modifySTRefU addressRef (+ 2)
+              Pipes.yield output
+              go
           5 ->
             do
-              jumpTo <- jumpCode (== 0) address modes relativeBase machineState
-              writeSTRefU addressRef jumpTo
-              go currOutputs currInputs
+              jumpTo <- lift $ jumpCode (== 0) address modes relativeBase machineState
+              lift $ writeSTRefU addressRef jumpTo
+              go
           6 ->
             do
-              jumpTo <- jumpCode (/= 0) address modes relativeBase machineState
-              writeSTRefU addressRef jumpTo
-              go currOutputs currInputs
+              jumpTo <- lift $ jumpCode (/= 0) address modes relativeBase machineState
+              lift $ writeSTRefU addressRef jumpTo
+              go
           7  ->
             do
-              leCode address modes relativeBase machineStateRef
-              modifySTRefU addressRef (+ 4)
-              go currOutputs currInputs
+              lift $ leCode address modes relativeBase machineStateRef
+              lift $ modifySTRefU addressRef (+ 4)
+              go
           8  ->
             do
-              eqCode address modes relativeBase machineStateRef
-              modifySTRefU addressRef (+ 4)
-              go currOutputs currInputs
+              lift $ eqCode address modes relativeBase machineStateRef
+              lift $ modifySTRefU addressRef (+ 4)
+              go
           9  ->
             do
-              baseAdjust <- baseCode address modes relativeBase machineState
-              modifySTRefU relativeBaseRef (+ baseAdjust)
-              modifySTRefU addressRef (+ 2)
-              go currOutputs currInputs
-          99 -> pure currOutputs
+              baseAdjust <- lift $ baseCode address modes relativeBase machineState
+              lift $ modifySTRefU relativeBaseRef (+ baseAdjust)
+              lift $ modifySTRefU addressRef (+ 2)
+              go
+          99 -> pure ()
           n  ->
             do
-            v <- V.unsafeFreeze machineState
+            v <- lift $ V.unsafeFreeze machineState
             error $ unlines $ ["incorrect opcode: " <> show n
-                              , "curr input:      " <> show currInputs
-                              , "curr outputs:    " <> show currOutputs
                               , "address:         " <> show address
                               , "instruction:     " <> show instruction
                               , "machine state:   " <> show v

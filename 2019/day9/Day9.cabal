@@ -20,6 +20,8 @@ executable day9
 
   build-depends:
       base
+    , pipes
+        ^>= 4.3.13
     , text
         ^>=1.2.3
     , unboxed-ref
