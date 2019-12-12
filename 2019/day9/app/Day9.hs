@@ -5,6 +5,7 @@
 module Main where
 
 import           Control.Monad.ST
+import           Data.Foldable               (traverse_)
 import           Data.STRef
 import           Data.STRef.Unboxed
 import qualified Data.Text                   as Text
@@ -12,10 +13,9 @@ import qualified Data.Text.IO                as IO
 import qualified Data.Vector.Unboxed         as V hiding (head)
 import           Data.Vector.Unboxed.Mutable (MVector)
 import qualified Data.Vector.Unboxed.Mutable as MV
-import Pipes (Pipe, lift, (>->), Producer)
+import           Pipes                       (Pipe, Producer, lift, (>->))
 import qualified Pipes                       as Pipes
 import qualified Pipes.Prelude               as Pipes
-import Data.Foldable (traverse_)
 
 
 main :: IO ()
@@ -261,10 +261,6 @@ readWithDefault def mv ind =
 toMVector :: forall s . [Int] -> ST s (MVector s Int)
 toMVector = V.unsafeThaw . V.fromList
 
-fromEither :: Either a a -> a
-fromEither = either id id
-
-
 -------------
 -- Parsing --
 -------------
@@ -275,15 +271,3 @@ readInput =
     let inps = Text.splitOn "," file
     pure $ fmap (Prelude.read . Text.unpack) inps
 
-
-example :: [Int]
-example = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
-
-example2 :: [Int]
-example2 = [1102,34915192,34915192,7,4,7,99,0]
-
-example3 :: [Int]
-example3 = [104,1125899906842624,99]
-
-example4 :: [Int]
-example4 = [109,-1, 21101, 0, 1, 1, 4, 0, 99]
