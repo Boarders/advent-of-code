@@ -1,0 +1,35 @@
+cabal-version:      2.4
+category:           Languages
+build-type:         Simple
+name:               Day11
+synopsis:           Advent of Code 2019 Day 11
+version:            0.1.0
+
+
+executable day11
+  default-language: Haskell2010
+
+  main-is:
+    Day11.hs
+
+  other-modules:
+    IntCode
+
+  ghc-options:
+    -threaded -rtsopts -O2 -fobject-code -with-rtsopts=-T -Wall
+
+  hs-source-dirs:
+    app/
+
+  build-depends:
+      base
+    , containers
+        ^>= 0.5.11.0
+    , pipes
+        ^>= 4.3.13
+    , text
+        ^>=1.2.3
+    , unboxed-ref
+        ^>= 0.4.0.0
+    , vector
+        ^>= 0.12.0.3
