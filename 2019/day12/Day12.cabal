@@ -18,11 +18,24 @@ executable day3
   hs-source-dirs:
     app/
 
+  other-modules:
+    Points
+
   build-depends:
       base
+    , vector-sized
+        ^>= 1.4.0.0
     , containers
         ^>= 0.5.11.0
     , megaparsec
         ^>= 7.0.5
+    , primitive
+        ^>= 0.7.0.0
+    , unboxed-ref
+        ^>= 0.4.0.0
+    , vector
+        ^>= 0.12.0.3
+    , vector-th-unbox
+        ^>= 0.2.1.7
     , text
         ^>=1.2.3
