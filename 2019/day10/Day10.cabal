@@ -1,0 +1,38 @@
+cabal-version:      2.4
+category:           Languages
+build-type:         Simple
+name:               Day8
+synopsis:           Advent of Code 2019 Day 10
+version:            0.1.0
+
+
+executable day10
+  default-language: Haskell2010
+
+  main-is:
+    Main.hs
+
+  ghc-options:
+    -threaded 
+    -rtsopts 
+    -O2 
+    -fobject-code
+    -with-rtsopts=-T 
+    -with-rtsopts=-N8
+    -Wall
+
+  hs-source-dirs:
+    app/
+
+  build-depends:
+      base
+    , containers
+        ^>= 0.6.2.1
+    , extra
+        ^>= 1.6.18
+    , parallel
+        ^>= 3.2.2.0
+    , keys
+        ^>= 3.12.2
+    , bytestring
+        ^>=0.10.10.0
