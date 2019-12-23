@@ -13,9 +13,8 @@ import Data.Map (Map)
 import qualified Data.Map  as Map
 import Data.Key (foldMapWithKey)
 import Data.Foldable
-import Data.List.Extra (maximumOn, groupOn)
+import Data.List.Extra (maximumOn)
 import Control.Parallel.Strategies
-import Data.List (nub)
 
 import Debug.Trace
 
@@ -24,22 +23,25 @@ main =
   do
     inputText <- ByteString.readFile "input.txt"
     let asteroids = parseInput inputText
-    let testIn = parseInput test
+--    let testIn = parseInput test
     let puzzle1Sol = puzzle1 asteroids
-    let point1 = fst puzzle1Sol
+    let stationPt = fst puzzle1Sol
     putStrLn "puzzle1 :"
     putStrLn $ (replicate 25 ' ') <> (show puzzle1Sol)
---    putStrLn ""
---    putStrLn "puzzle2 :"
---    putStrLn ""
---    putStrLn $ (replicate 25 ' ') <> (show . puzzle2 $ undefined)
+    putStrLn ""
+    putStrLn "puzzle2 :"
+    putStrLn ""
+    putStrLn $ (replicate 25 ' ') <> (show $ puzzle2 stationPt asteroids)
 
 
 puzzle1 :: [Point] -> (Point, Int)
 puzzle1 =  maximumOn snd . asteroidCount
 
-puzzle2 :: Set Point -> String
-puzzle2 = error "to do"
+puzzle2 :: Point -> [Point] -> Int
+puzzle2 stationPt = transform . asteroidsDestroyed stationPt 199
+  where
+    transform :: Point -> Int
+    transform Point{..} = 100 * x + y
 
 test :: ByteString
 test =
@@ -48,9 +50,29 @@ test =
 recentre :: Point -> [Point] -> [Point]
 recentre p = fmap (\q -> q - p)
 
-asteroidsDestroyed :: Point -> [Point] -> Int -> Point
-asteroidsDestroyed center points nth = undefined
+asteroidsDestroyed :: Point -> Int -> [Point] -> Point
+asteroidsDestroyed center nth points = destroyedOrder newPoints !! nth
   where
+    targetMap :: [Point] -> Map Line (Map Int Point)
+    targetMap = foldMap f . filter (/= Point 0 0)
+
+    destroyedOrder :: [Point] -> [Point]
+    destroyedOrder =
+        fold
+      . sequenceA
+      . Map.elems
+      . fmap (Map.elems)
+      . targetMap
+
+    f :: Point -> Map Line (Map Int Point)
+    f p =
+      let  -- to do: you don't want the line! you want to work out the angle from the vertical
+        line = pointToLine p
+        dist = manhattanNorm p
+      in
+        Map.singleton line (Map.singleton dist p)
+      
+      
     newPoints = recentre center points
     
     
@@ -127,6 +149,13 @@ instance Num Point where
   (+) (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)
   (-) (Point x1 y1) (Point x2 y2) = Point (x1 - x2) (y1 - y2)
   negate (Point x y) = (Point (- x) (- y))
+  (*) = error "undefined"
+  abs = error "undefined"
+  signum = error "undefined"
+  fromInteger = error "undefined"
+
+manhattanNorm :: Point -> Int
+manhattanNorm Point{..} = abs x + abs y
 
 
 (.||.) :: Point -> Point -> Bool
