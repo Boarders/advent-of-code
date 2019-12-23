@@ -13,8 +13,9 @@ import Data.Map (Map)
 import qualified Data.Map  as Map
 import Data.Key (foldMapWithKey)
 import Data.Foldable
-import Data.List.Extra (maximumOn)
+import Data.List.Extra (maximumOn, sortOn)
 import Control.Parallel.Strategies
+
 
 import Debug.Trace
 
@@ -60,20 +61,28 @@ asteroidsDestroyed center nth points = destroyedOrder newPoints !! nth
     destroyedOrder =
         fold
       . sequenceA
-      . Map.elems
+      . g
+      . Map.toList
       . fmap (Map.elems)
       . targetMap
 
+    g :: [(Line, [Point])] -> [[Point]]
+    g = fmap snd . sortOn (angleFromVertical . fst)
+
     f :: Point -> Map Line (Map Int Point)
     f p =
-      let  -- to do: you don't want the line! you want to work out the angle from the vertical
+      let
         line = pointToLine p
         dist = manhattanNorm p
+        ang  = angleFromVertical line
       in
         Map.singleton line (Map.singleton dist p)
       
       
     newPoints = recentre center points
+
+angleFromVertical :: Line -> Double
+angleFromVertical (Line x y) = atan (fromIntegral x / fromIntegral y)
     
     
     
