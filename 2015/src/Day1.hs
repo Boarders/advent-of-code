@@ -5,39 +5,49 @@ import Data.ByteString (ByteString)
 import Data.Word
 import Data.Primitive.ByteArray
 import Common
+import Data.Primitive.Types
 
 day1 :: IO ()
 day1 = do
---  ByteString.writeFile "test" test
-  ba <- readFileBA "test"
-  print $ countBracketsBA ba
-  putStrLn "solution 1: "
+  ba <- readFileBA "input/day1.dat"
+  let sol1 = countBracketsBA ba
+  let sol2 = firstNeg ba
+  putStrLn $ unlines (solutions sol1 sol2)
 
 
-n :: Int
-n = 10000000
-
-test :: ByteString
-test = ByteString.replicate n 40 <> ByteString.replicate n 41
+solutions :: Int -> Int -> [String]
+solutions s1 s2 =
+  ["~~~ Day 1 ~~~"
+  ,""
+  ,"solution 1: " <> (show s1)
+  ,"solution 2: " <> (show s2)
+  ]
 
 countBrackets :: ByteString -> Int
-countBrackets = ByteString.foldl' add 0
+countBrackets = ByteString.foldl' addBS 0
   where
-    add :: Int -> Word8 -> Int
-    add acc 40 = acc + 1
-    add acc 41 = acc - 1
-    add acc _  = acc
-
+    addBS :: Int -> Word8 -> Int
+    addBS acc 40 = acc + 1
+    addBS acc 41 = acc - 1
+    addBS acc _  = acc
 
 
 countBracketsBA :: ByteArray -> Int
 countBracketsBA = foldlBA add 0
+
+add :: Int -> Word8 -> Int
+add acc 40 = acc + 1
+add acc 41 = acc - 1
+add acc _  = acc
+
+
+firstNeg :: ByteArray -> Int
+firstNeg arr = go 0 0
   where
-    add :: Int -> Word8 -> Int
-    add acc 40 = acc + 1
-    add acc 41 = acc - 1
-    add acc _  = acc
-
-
+    go i acc
+      | acc == -1 = i
+      | i < maxI  = go (i + 1) (add acc (indexByteArray arr i)) 
+      | otherwise = error "Not found"
+    maxI = sizeofByteArray arr `quot` sizeOf (undefined :: Word8)
 
 
