@@ -10,15 +10,24 @@ import qualified Criterion.Main                             as C (bench, bgroup,
 import qualified Data.ByteString                            as ByteString
 import           Control.DeepSeq
 import qualified Data.Primitive.ByteArray                   as ByteArray
+import Data.Word
 import Common
 import Day1
 
 
+n :: Int
+n = 100000
+
+input :: [Word8]
+input = replicate n 40 <> replicate n 41
+
 getInputs :: IO (ByteArray.ByteArray, ByteString.ByteString)
 getInputs =
   do
-    ba <- readFileBA "test"
-    bs <- ByteString.readFile "test"
+    let ba = ByteArray.byteArrayFromList input
+    let bs = ByteString.pack input
+--    ba <- readFileBA "test"
+--    bs <- ByteString.readFile "test"
     pure (ba, bs)
 
 
@@ -31,8 +40,9 @@ main = do
   C.defaultMain . pure $
     C.env getInputs $ \ ~(bytes, bs) ->
       C.bgroup "bracket count"
-        [ C.bench "BA" $ C.whnf countBracketsBA bytes
-        , C.bench "BS" $ C.whnf countBrackets   bs
+        [ C.bench "BA" $ C.nf countBracketsBA bytes
+        , C.bench "BS" $ C.nf countBrackets   bs
+        , C.bench "BS inline" $ C.nf countBracketsBS   bs        
         ]
   
   

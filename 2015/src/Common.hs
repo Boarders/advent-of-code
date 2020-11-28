@@ -1,4 +1,5 @@
 {-# language ScopedTypeVariables #-}
+{-# language BangPatterns #-}
 module Common where
 
 
@@ -6,7 +7,11 @@ import Data.Primitive.ByteArray
 import System.IO
 import Control.Exception
 import Data.Primitive.Types
--- import Foreign.Ptr
+import Data.Word
+import Foreign.ForeignPtr
+import Foreign.Ptr
+import Data.ByteString.Internal
+import Foreign.Storable hiding (sizeOf)
 
 readFileBA :: FilePath -> IO ByteArray
 readFileBA f = 
@@ -53,3 +58,25 @@ foldlBA f z arr = go 0 z
       | i < maxI  = go (i + 1) (f acc (indexByteArray arr i)) 
       | otherwise = acc
     maxI = sizeofByteArray arr `quot` sizeOf (undefined :: a)
+
+--{-# INLINE myfoldl' #-}
+myfoldl' :: (a -> Word8 -> a) -> a -> ByteString -> a
+myfoldl' f v (PS fp off len) =
+      accursedUnutterablePerformIO $ withForeignPtr fp $ \p ->
+        go v (p `plusPtr` off) (p `plusPtr` (off+len))
+    where
+      -- tail recursive; traverses array left to right
+      go !z !p !q | p == q    = return z
+                  | otherwise = do x <- peek p
+                                   go (f z x) (p `plusPtr` 1) q
+
+solutions :: (Show a, Show b) => Int -> a -> b -> [String]
+solutions n s1 s2 =
+  ["~~~ Day " <> show n <> "~~~"
+  ,""
+  ,"solution 1: " <> (show s1)
+  ,"solution 2: " <> (show s2)
+  ]
+
+
+
