@@ -19,7 +19,7 @@ day2 = do
       let
         Pair sol1 sol2 = runSol res
       in
-        putStrLn $ unlines (solutions 2 sol1 sol2)
+        putStrLn $ solutions 2 sol1 sol2
 
 data Present = Present
   { smol :: !Int

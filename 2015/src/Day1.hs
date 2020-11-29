@@ -15,7 +15,7 @@ day1 = do
   ba <- readFileBA "input/day1.dat"
   let sol1 = countBracketsBA ba
   let sol2 = firstNeg ba
-  putStrLn $ unlines (solutions 1 sol1 sol2)
+  putStrLn $ solutions 1 sol1 sol2
 
 countBrackets :: ByteString -> Int
 countBrackets = ByteString.foldl' addBS 0

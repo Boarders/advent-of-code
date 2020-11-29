@@ -70,8 +70,8 @@ myfoldl' f v (PS fp off len) =
                   | otherwise = do x <- peek p
                                    go (f z x) (p `plusPtr` 1) q
 
-solutions :: (Show a, Show b) => Int -> a -> b -> [String]
-solutions n s1 s2 =
+solutions :: (Show a, Show b) => Int -> a -> b -> String
+solutions n s1 s2 = unlines $
   ["~~~ Day " <> show n <> "~~~"
   ,""
   ,"solution 1: " <> (show s1)
