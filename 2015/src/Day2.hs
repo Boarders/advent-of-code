@@ -7,7 +7,7 @@ import Data.Bytes.Parser
 import Data.Bytes.Parser.Ascii
 import Data.Bytes.Parser.Latin
 import Control.Applicative
-import Data.List (foldl')
+import Data.List (foldl', sort)
 
 day2 :: IO ()
 day2 = do
@@ -32,21 +32,8 @@ data Pair a b = Pair !a !b
 
 sort3 :: (Ord a) => (a,a,a) -> (a,a,a)
 sort3 (a,b,c) =
-  case ( a < b, b < c, a < c ) of
-    ( True , True , _     ) -> (a,b,c)
-    ( True , False, True  ) -> (a,c,b)
-    ( True , False, False ) -> (c,a,b)
-    ( False, True , True  ) -> (b,a,c)
-    ( False, False, False ) -> (b,c,a)
-    ( False, True , _    )  -> (c,b,a)
-    bls -> error $ "pattern match didn't get " <> show bls
-
-{-
-sort3 :: (Ord a) => (a,a,a) -> (a,a,a)
-sort3 (a,b,c) =
   let [l, m, h] = sort [a,b,c]
   in (l, m, h)
--}
 
 present :: Int -> Int -> Int -> Present
 present l w h =
