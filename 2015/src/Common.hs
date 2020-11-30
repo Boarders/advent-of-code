@@ -80,3 +80,23 @@ solutions n s1 s2 = unlines $
 
 
 
+altFoldl' :: (a -> Char -> a) -> a -> ByteString -> (a, a)
+altFoldl' f v (PS fp off len) =
+      accursedUnutterablePerformIO $ withForeignPtr fp $ \p ->
+        let
+          !end  =  p  `plusPtr` (off + len)
+          !end' = end `plusPtr` (- 1)
+        in
+          go (v, v) (p `plusPtr` off) end end'
+    where
+      -- tail recursive; traverses array left to right
+      go z@(!a1, !a2) !p !q !q' | p == q  = return z
+                                | p == q' =
+                                    do xf <- peek p
+                                       return (f a1 (w2c xf), a2)
+                                | otherwise =
+                                    do x <- peek p
+                                       y <- peek (p `plusPtr` 1)
+                                       go (f a1 (w2c x), f a2 (w2c y)) (p `plusPtr` 2) q q'
+
+
