@@ -1,0 +1,124 @@
+cabal-version:      3.0
+category:           Languages
+build-type:         Simple
+name:               Day3
+synopsis:           Advent of Code 2020
+version:            0.1.0
+
+
+executable aoc
+  default-language: Haskell2010
+
+  main-is:
+    Main.hs
+
+  ghc-options:
+    -threaded
+    -rtsopts
+    -O2
+    -with-rtsopts=-T
+    -Wall
+    -Wincomplete-patterns    
+
+  hs-source-dirs:
+    app/
+
+  build-depends:
+      base
+    , Days
+
+Library Days
+
+  ghc-options:
+    -threaded
+    -rtsopts
+    -O2
+    -Wall
+    -Wincomplete-patterns
+
+  hs-source-dirs:
+    src/
+
+  build-depends:
+      base
+    , bytestring
+    , containers
+    , lens
+    , mtl
+    , text
+    , vector
+    , primitive
+    , ghc-prim
+    , bytesmith
+    , text-short
+    , unordered-containers
+    , hashable
+    , matrices
+    , megaparsec
+    , attoparsec
+
+  exposed-modules:
+      Common
+      Day1
+ --     Day2
+ --     Day3
+ --     Day4
+ --     Day5
+ --     Day6
+ --     Day7
+ --     Day8
+ --     Day9
+ --     Day10
+ --     Day11
+ --     Day12
+ --     Day13
+ --     Day14
+ --     Day15
+ --     Day16
+ --     Day17
+ --     Day18
+ --     Day19
+ --     Day20
+ --     Day21
+ --     Day22
+ --     Day23
+ --     Day24
+ --     Day25
+
+  default-language:
+    Haskell2010
+
+
+benchmark bench
+
+  default-language:
+    Haskell2010
+
+  main-is:
+    Bench.hs
+
+  type:
+    exitcode-stdio-1.0  
+    
+  ghc-options:
+    -threaded
+    -rtsopts
+    -O2
+    -Wall
+    -Wincomplete-patterns
+
+  hs-source-dirs:
+    bench
+  
+  build-depends:
+    , base
+    , criterion
+    , Days
+    , bytestring
+    , primitive
+    , deepseq
+  
+   
+    
+
+  other-modules:
