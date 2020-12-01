@@ -22,5 +22,4 @@ main = do
         , C.bench "intSet"   $ C.nf s1 is
         , C.bench "naive2"   $ C.nf sum3_2020 is
         , C.bench "intSet2"  $ C.nf s2 is
-        , C.bench "solution" $ C.nfIO day1
         ]
