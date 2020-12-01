@@ -19,7 +19,7 @@ day1 = do
     input = parseInput bs
     sol1 = sum_2020 input
     sol2 = sum3_2020 input
-  putStrLn $ (solutions 2 sol1 sol2)
+  putStrLn $ (solutions 1 sol1 sol2)
 
 parseInput :: ByteString -> [Int]
 parseInput = fmap (fst . fromJust . ByteString.readInt) . ByteString.lines
