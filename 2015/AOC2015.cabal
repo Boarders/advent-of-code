@@ -53,6 +53,9 @@ Library Days
     , text-short
     , unordered-containers
     , hashable
+    , matrices
+    , megaparsec
+    , attoparsec
 
   exposed-modules:
       Common
@@ -60,6 +63,7 @@ Library Days
       Day2
       Day3
       Day5
+      Day6
 
   default-language:
     Haskell2010
