@@ -117,6 +117,8 @@ benchmark bench
     , bytestring
     , primitive
     , deepseq
+    , vector
+    , containers
   
    
     
