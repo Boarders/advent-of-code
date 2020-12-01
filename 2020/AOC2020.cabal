@@ -18,7 +18,10 @@ executable aoc
     -O2
     -with-rtsopts=-T
     -Wall
-    -Wincomplete-patterns    
+    -Wincomplete-patterns
+    -rtsopts
+    -with-rtsopts=-N    
+
 
   hs-source-dirs:
     app/
@@ -35,6 +38,7 @@ Library Days
     -O2
     -Wall
     -Wincomplete-patterns
+
 
   hs-source-dirs:
     src/
@@ -56,6 +60,8 @@ Library Days
     , matrices
     , megaparsec
     , attoparsec
+    , parallel
+
 
   exposed-modules:
       Common
