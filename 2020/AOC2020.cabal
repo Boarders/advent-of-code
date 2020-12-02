@@ -61,6 +61,7 @@ Library Days
     , megaparsec
     , attoparsec
     , parallel
+    , deepseq
 
 
   exposed-modules:

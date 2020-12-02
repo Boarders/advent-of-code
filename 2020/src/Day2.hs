@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Day2 where
 
 import Common
@@ -5,6 +6,8 @@ import Data.Attoparsec.ByteString.Char8
 import qualified Data.ByteString.Char8 as ByteString
 import Data.ByteString.Char8 (ByteString)
 import Data.Functor (void)
+import Control.DeepSeq
+import GHC.Generics
 
 day2 :: IO ()
 day2 = do
@@ -14,18 +17,30 @@ day2 = do
     input = traverse (parseOnly parsePassInfo) (ByteString.lines bs)
     sol1  = length . filter s1 <$> input
     sol2  = length . filter s2 <$> input
-  putStrLn $ (solutions 2 sol1 sol2)    
+  putStrLn $ (solutions 2 sol1 sol2)
+
+d2 = do
+  bs <- ByteString.readFile "input/day2.dat"
+  let
+    input = traverse (parseOnly parsePassInfo) (ByteString.lines bs)
+  pure input
+      
 
 data Range = Range
   { low  :: !Int
   , high :: !Int
   }
+  deriving (Generic)
+
+instance NFData Range
 
 data PassInfo = PassInfo
   { passRange :: !Range
   , target    :: !Char
   , password  :: !ByteString
-  }
+  } deriving (Generic)
+
+instance NFData PassInfo
 
 parsePassInfo :: Parser PassInfo
 parsePassInfo = do
