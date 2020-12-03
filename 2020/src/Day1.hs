@@ -1,31 +1,23 @@
 module Day1 where
 
 import qualified Data.ByteString.Char8 as ByteString
-import Data.ByteString.Char8 (ByteString)
 import Common (solutions)
 import Data.Maybe (fromJust)
 import qualified Data.IntSet as IntSet
 
 day1 :: IO ()
 day1 = do
-  bs <- ByteString.readFile "input/day1.dat"
+  input <- parseInput
   let
-    input = parseInput bs
     sol1 = s1 input
     sol2 = s2 input
   putStrLn $ (solutions 1 sol1 sol2)
 
-day1' :: IO (Int, Int)
-day1' = do
-  bs <- ByteString.readFile "input/day1.dat"
-  let
-    input = parseInput bs
-    sol1 = s1 input
-    sol2 = s2 input
-  pure (sol1, sol2)
 
-parseInput :: ByteString -> [Int]
-parseInput = fmap (fst . fromJust . ByteString.readInt) . ByteString.lines
+parseInput :: IO [Int]
+parseInput = do
+  bs <- ByteString.readFile "input/day1.dat"  
+  pure . fmap (fst . fromJust . ByteString.readInt) . ByteString.lines $ bs
 
 sum_2020 :: [Int] -> Int
 sum_2020 xs = head [ x * y | x <- xs, y <- tail xs, x + y == 2020]

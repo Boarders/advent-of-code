@@ -9,17 +9,17 @@ import Data.Functor (void)
 import Control.DeepSeq
 import GHC.Generics
 
+
 day2 :: IO ()
 day2 = do
-  bs <- ByteString.readFile "input/day2.dat"
+  input <- parseInput
   let
-    input :: Either String [PassInfo]
-    input = traverse (parseOnly parsePassInfo) (ByteString.lines bs)
-    sol1  = length . filter s1 <$> input
-    sol2  = length . filter s2 <$> input
+    sol1  = s1 input
+    sol2  = s2 input
   putStrLn $ (solutions 2 sol1 sol2)
 
-d2 = do
+parseInput :: IO (Either String [PassInfo])
+parseInput = do
   bs <- ByteString.readFile "input/day2.dat"
   let
     input = traverse (parseOnly parsePassInfo) (ByteString.lines bs)
@@ -54,20 +54,27 @@ parsePassInfo = do
   pass <- takeByteString
   pure (PassInfo (Range l h) tgt pass)
 
-s1 :: PassInfo -> Bool
-s1 (PassInfo (Range l h) tgt pass) =
+s1 :: Either String [PassInfo] -> Either String Int
+s1 = fmap (length . filter valid1)
+
+valid1 :: PassInfo -> Bool
+valid1 (PassInfo (Range l h) tgt pass) =
+  
   let c = countLetter pass tgt in
     (l <= c && c <= h)
 
-s2 :: PassInfo -> Bool
-s2 (PassInfo range tgt pass) = occursOnce pass range tgt
+s2 :: Either String [PassInfo] -> Either String Int
+s2 = fmap (length . filter valid2)
+
+valid2 :: PassInfo -> Bool
+valid2 (PassInfo range tgt pass) = occursOnce pass range tgt
 
 countLetter :: ByteString -> Char -> Int
 countLetter bs tgt = ByteString.foldl occurs 0 bs
   where
     occurs :: Int -> Char -> Int
-    occurs acc c | c == tgt = acc + 1
-                 | otherwise   = acc
+    occurs acc c | c == tgt  = acc + 1
+                 | otherwise = acc
 
 
 occursOnce :: ByteString -> Range -> Char -> Bool
