@@ -20,8 +20,7 @@ executable aoc
     -Wall
     -Wincomplete-patterns
     -rtsopts
-    -with-rtsopts=-N    
-
+    -with-rtsopts=-N
 
   hs-source-dirs:
     app/
@@ -38,6 +37,7 @@ Library Days
     -O2
     -Wall
     -Wincomplete-patterns
+    -fobject-code
 
 
   hs-source-dirs:
@@ -69,7 +69,7 @@ Library Days
       Day1
       Day2
       Day3
- --     Day4
+      Day4
  --     Day5
  --     Day6
  --     Day7
