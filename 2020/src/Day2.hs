@@ -24,7 +24,7 @@ parseInput = do
   let
     input = traverse (parseOnly parsePassInfo) (ByteString.lines bs)
   pure input
-      
+
 
 data Range = Range
   { low  :: !Int
@@ -59,7 +59,7 @@ s1 = fmap (length . filter valid1)
 
 valid1 :: PassInfo -> Bool
 valid1 (PassInfo (Range l h) tgt pass) =
-  
+
   let c = countLetter pass tgt in
     (l <= c && c <= h)
 

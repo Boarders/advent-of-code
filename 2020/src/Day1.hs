@@ -1,3 +1,4 @@
+{-# language Strict #-}
 module Day1 where
 
 import qualified Data.ByteString.Char8 as ByteString
@@ -16,12 +17,14 @@ day1 = do
 
 parseInput :: IO [Int]
 parseInput = do
-  bs <- ByteString.readFile "input/day1.dat"  
-  pure . fmap (fst . fromJust . ByteString.readInt) . ByteString.lines $ bs
+  bs <- ByteString.readFile "input/day1.dat"
+  pure
+    . fmap (fst . fromJust . ByteString.readInt)
+    . ByteString.lines $ bs
 
 sum_2020 :: [Int] -> Int
 sum_2020 xs = head [ x * y | x <- xs, y <- tail xs, x + y == 2020]
-  
+
 
 sum3_2020 :: [Int] -> Int
 sum3_2020 xs = head [ x * y * z | x <- xs, y <- tail xs, z <- tail (tail xs), x + y + z == 2020]

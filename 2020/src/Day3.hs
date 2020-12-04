@@ -23,41 +23,41 @@ parseInput = do
 data Step = Step
   { rowLenS :: !Int
   , stepS   :: !Int
-  , startS  :: !Int
   }
 
 findInd :: Step -> Int -> Int
-findInd (Step rowLen step start) row =
-  start + ((row - 1) * step `mod` rowLen) - 1
+findInd (Step rowLen step) row =
+  row * step `mod` rowLen
 
 
-countTrees :: Int -> Int -> [ByteString] -> Int
-countTrees step start bss = snd . foldl' c (1, 0) $ bss
+countTrees :: Int -> [ByteString] -> Int
+countTrees step bss = snd . foldl' c (0, 0) $ bss
   where
     rowLen = ByteString.length . head $ bss
-    st = Step rowLen step start
-    
+    st = Step rowLen step
+
     c :: (Int, Int) -> ByteString -> (Int, Int)
     c (row, count) bs =
-       (row + 1, count + (fromEnum (bs `index` findInd st row == '#')))
+       (row + 1, count + fromEnum (bs `index` findInd st row == '#'))
 
-countTrees2 :: Int -> Int -> [ByteString] -> Int
-countTrees2 step start bss = (\(_,_,cnt) -> cnt) . foldl' c (True, 1, 0) $ bss
+countTrees2 :: Int -> [ByteString] -> Int
+countTrees2 step bss = (\(_,_,cnt) -> cnt) . foldl' c (True, 0, 0) $ bss
   where
     rowLen = ByteString.length . head $ bss
-    st = Step rowLen step start
-    
+    st = Step rowLen step
+
     c :: (Bool, Int, Int) -> ByteString -> (Bool, Int, Int)
-    c (alt, row, count) bs =
+    c (alt, jump, count) bs =
       if alt
         then
-          (not alt, row + 1 , count + (fromEnum (bs `index` findInd st row == '#')))
+          (not alt, jump + 1 , count + (fromEnum (bs `index` findInd st jump == '#')))
         else
-          (not alt, row, count)
+          (not alt, jump, count)
 
 s1 :: [ByteString] -> Int
-s1 = countTrees 3 1
+s1 = countTrees 3
 
 s2 :: [ByteString] -> Int
 s2 input =
-  (product . map (\i -> countTrees i 1 input) $ [1,3,5,7]) * countTrees2 1 1 input
+    (product . map (\i -> countTrees i input) $ [1,3,5,7])
+  * countTrees2 1 input
