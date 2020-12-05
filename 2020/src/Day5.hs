@@ -20,7 +20,6 @@ parseInput = do
   bs <- ByteString.readFile "input/day5.dat"
   pure $ ByteString.lines bs
 
-
 processStart :: ByteString -> Int
 processStart bs = ByteString.foldl' acc 0 bs
   where
@@ -34,7 +33,7 @@ processEnd bs = ByteString.foldl' acc 0 bs
     acc n c = (n `shiftL` 1) `xor` (fromEnum (c == 'R'))
 
 s1 :: [ByteString] -> Int
-s1 = 
+s1 =
     foldl' max 0
   . fmap (\ ~(s,e) -> 8 * s + e)
   . fmap (bimap processStart processEnd)
