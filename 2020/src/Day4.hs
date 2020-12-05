@@ -1,5 +1,6 @@
 {-# language OverloadedStrings #-}
 {-# language ViewPatterns #-}
+
 module Day4 where
 
 import Common
@@ -21,7 +22,6 @@ day4 = do
   let
     sol1  = s1 input
     sol2  = s2 input
-
   putStrLn $ (solutions 4 sol1 sol2)
 
 parseInput :: IO [HashMap Text Text]
@@ -29,7 +29,7 @@ parseInput = do
   txt <- Text.readFile "input/day4.dat"
   let
     processEntry =
-          foldl' (\acc ~(k,v) -> HashMap.insert k v acc) mempty
+          foldl' (\acc (k, v) -> HashMap.insert k v acc) mempty
         . fmap (breakDrop (== ':'))
         . Text.words
     entries =
@@ -83,6 +83,7 @@ data PassInfo = PassInfo
 between :: Int -> Int -> Int -> Bool
 between l h v = l <= v && v <= h
 
+
 passInfo ::
   Int -> Int -> Int -> (Int, Text) -> Text -> Text -> Text -> Maybe PassInfo
 passInfo byr iyr eyr hgt hcl ecl pid = do
@@ -91,14 +92,15 @@ passInfo byr iyr eyr hgt hcl ecl pid = do
   guard (between 2010 2030 eyr)
   guard (hgtRule hgt)
   guard (hclRule hcl)
-  guard (ecl `HashSet.member` eyeColours)
   guard ((Text.length pid) == 9)
+  guard (ecl `HashSet.member` eyeColours)
   pure (PassInfo byr iyr eyr hgt hcl ecl pid)
 
 hgtRule :: (Int, Text) -> Bool
 hgtRule (hgt, unit) | unit == "cm" = 150 <= hgt && hgt <= 193
                     | unit == "in" = 59 <= hgt && hgt <= 76
                     | otherwise = False
+
 
 hclRule :: Text -> Bool
 hclRule (Text.uncons -> Just ('#', rest)) = Text.all ((||) <$> p1 <*> p2) rest
