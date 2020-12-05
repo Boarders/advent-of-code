@@ -111,12 +111,10 @@ altFoldl' f v (PS fp off len) =
 
 breakDrop :: (Char -> Bool) -> Text.Text -> (Text.Text, Text.Text)
 breakDrop p = spanDrop (not . p)
-{-# INLINE breakDrop #-}
 
 spanDrop :: (Char -> Bool) -> Text.Text -> (Text.Text, Text.Text)
 spanDrop p t = case span__ p t of
              (# hd,tl #) -> (hd,tl)
-
 
 span__ :: (Char -> Bool) -> Text.Text -> (# Text.Text, Text.Text #)
 span__ p t@(Text.Text arr off len) = (# hd,tl #)
@@ -126,7 +124,6 @@ span__ p t@(Text.Text arr off len) = (# hd,tl #)
         loop !i | i < len && p c = loop (i+d)
                 | otherwise      = i
             where Iter c d       = iter t i
-{-# INLINE span__ #-}
 
 readIntR :: Text.Text -> Maybe (Int, Text.Text)
 readIntR =
