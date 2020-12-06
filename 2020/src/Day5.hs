@@ -6,6 +6,7 @@ import Data.ByteString.Char8 (ByteString)
 import Data.List(foldl')
 import Data.Bits
 import Data.Bifunctor (bimap)
+import Data.Char (ord)
 
 day5 :: IO ()
 day5 = do
@@ -32,12 +33,17 @@ processEnd bs = ByteString.foldl' acc 0 bs
     acc :: Int -> Char -> Int
     acc n c = (n `shiftL` 1) `xor` (fromEnum (c == 'R'))
 
+processAll :: ByteString -> Int
+processAll bs = ByteString.foldl' acc 0 bs
+  where
+    acc :: Int -> Char -> Int
+    acc n c = (n `shiftL` 1) `xor` (complement ((ord c) `shiftR` 2) .&. 1)
+
 s1 :: [ByteString] -> Int
 s1 =
     foldl' max 0
-  . fmap (\ ~(s,e) -> 8 * s + e)
-  . fmap (bimap processStart processEnd)
-  . fmap (ByteString.splitAt 7)
+  . fmap processAll
+
 
 s2 :: [ByteString] -> Int
 s2 bs  = tot - summed
@@ -45,9 +51,7 @@ s2 bs  = tot - summed
   tot = (hi * (hi + 1) + lo * (1 - lo)) `shiftR` 1
   (hi, lo, summed) =
       maxMinSum
-    . fmap (\ ~(s,e) -> 8 * s + e)
-    . fmap (bimap processStart processEnd)
-    . fmap (ByteString.splitAt 7)
+    . fmap processAll
     $ bs
 
 maxMinSum :: [Int] -> (Int, Int, Int)
