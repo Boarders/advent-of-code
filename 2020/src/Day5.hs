@@ -21,18 +21,6 @@ parseInput = do
   bs <- ByteString.readFile "input/day5.dat"
   pure $ ByteString.lines bs
 
-processStart :: ByteString -> Int
-processStart bs = ByteString.foldl' acc 0 bs
-  where
-    acc :: Int -> Char -> Int
-    acc n c = (n `shiftL` 1) `xor` (fromEnum (c == 'B'))
-
-processEnd :: ByteString -> Int
-processEnd bs = ByteString.foldl' acc 0 bs
-  where
-    acc :: Int -> Char -> Int
-    acc n c = (n `shiftL` 1) `xor` (fromEnum (c == 'R'))
-
 processAll :: ByteString -> Int
 processAll bs = ByteString.foldl' acc 0 bs
   where
@@ -40,9 +28,7 @@ processAll bs = ByteString.foldl' acc 0 bs
     acc n c = (n `shiftL` 1) `xor` (complement ((ord c) `shiftR` 2) .&. 1)
 
 s1 :: [ByteString] -> Int
-s1 =
-    foldl' max 0
-  . fmap processAll
+s1 = foldl' max 0 . fmap processAll
 
 
 s2 :: [ByteString] -> Int
