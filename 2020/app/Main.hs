@@ -1,6 +1,11 @@
 module Main where
 
 import Day1
+import Day2
+import Day3
+import Day4
+import Day5
+import Day6
 {-
 import Day2
 import Day3
@@ -30,12 +35,13 @@ import Day25
 
 main :: IO ()
 main =
-  day1
+  day6
   {-
   sequence_
   [ day1
   , day2
   , day3
+  , day4
   , day5
   , day6
   ]
