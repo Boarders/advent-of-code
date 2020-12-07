@@ -19,6 +19,8 @@ import Data.Text.Internal (text)
 import Data.Text.Unsafe (Iter(..), iter)
 import qualified Data.Attoparsec.Text as Text.Parser
 import qualified Data.Char as Char
+import qualified Data.ByteString.Char8 as ByteString
+import Data.Maybe (fromJust)
 
 readFileBA :: FilePath -> IO ByteArray
 readFileBA f = 
@@ -137,3 +139,6 @@ intParser = do
   d  <- Text.Parser.decimal
   ts <- Text.Parser.takeWhile (not . Char.isSpace)
   pure (d, ts)
+
+bsToInt :: ByteString -> Int
+bsToInt = fst . fromJust . ByteString.readInt
