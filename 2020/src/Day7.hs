@@ -6,8 +6,7 @@ module Day7 where
 import Common
 import qualified Data.ByteString.Char8 as ByteString
 import Data.ByteString.Char8 (ByteString)
-import Control.DeepSeq
-import GHC.Generics
+
 import Data.Bifunctor (bimap)
 import Data.Maybe (fromJust)
 import Data.List (uncons, foldl')
@@ -23,7 +22,7 @@ import qualified Data.Text.Lazy                    as TL
 import qualified Data.Text.Lazy.IO                 as TL
 import           System.FilePath.Posix             ((<.>))
 
- 
+
 day7 :: IO ()
 day7 = do
   input <- parseInput
@@ -95,11 +94,11 @@ findDescendents n g =
 countDescendents :: Label -> Graph -> Int
 countDescendents n g =
     let descs = g Map.! n in
-      foldl' (\acc (n, d) -> n * (countDescendents d g) + acc) 1 descs      
-  
+      foldl' (\acc (n', d) -> n' * (countDescendents d g) + acc) 1 descs
+
 
 s1, s2 :: Graph -> Int
-s1 = Set.size . findDescendents "shiny gold" . transposeGraph 
+s1 = Set.size . findDescendents "shiny gold" . transposeGraph
 s2 = pred . countDescendents "shiny gold"
 
 
@@ -107,8 +106,8 @@ s2 = pred . countDescendents "shiny gold"
 -- dot file output --
 ---------------------
 
-
-test =
+testInput :: ByteString
+testInput =
   ByteString.unlines
   [ "light red bags contain 1 bright white bag, 2 muted yellow bags."
   , "dark orange bags contain 3 bright white bags, 4 muted yellow bags."
@@ -145,13 +144,13 @@ networkGraphParameters = G.defaultParams {
         (str, _)  -> colorAttribute  green <> nodeSh <> [G.textLabel (TL.pack str)]
     ,
     G.fmtEdge = \case
-        (str1, str2, n)  -> colorAttribute blue <> [G.textLabel (TL.pack (show n))]
+        (_, _, n)  -> colorAttribute blue <> [G.textLabel (TL.pack (show n))]
     }
   where
     colorAttribute color = [ G.Color $ G.toColorList [color] ]
     blue   = G.RGB 30 144 255
     green = G.RGB 0 100 0
-    nodeSh = [G.Shape G.Ellipse] <> [G.Area 0.5]    
+    nodeSh = [G.Shape G.Ellipse] <> [G.Area 0.5]
 
 getNodes :: Graph -> [(String, ())]
 getNodes = fmap (\x -> (x, ())) . fmap ByteString.unpack . Map.keys
@@ -168,5 +167,3 @@ getEdges = Map.foldMapWithKey toEdge
           Set.toList . Set.fromList
         . fmap (\(n, tgtNode) -> (srcNodeStr, ByteString.unpack tgtNode, n))
         . Set.toList
-        
-               
