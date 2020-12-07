@@ -5,7 +5,6 @@ import qualified Data.ByteString.Char8 as ByteString
 import Data.ByteString.Char8 (ByteString)
 import Data.List(foldl')
 import Data.Bits
-import Data.Bifunctor (bimap)
 import Data.Char (ord)
 
 day5 :: IO ()
