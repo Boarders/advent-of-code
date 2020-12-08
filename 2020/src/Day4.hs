@@ -22,7 +22,7 @@ day4 = do
   let
     sol1  = s1 input
     sol2  = s2 input
-  putStrLn $ (solutions 4 sol1 sol2)
+  solutions 4 sol1 sol2
 
 parseInput :: IO [HashMap Text Text]
 parseInput = do

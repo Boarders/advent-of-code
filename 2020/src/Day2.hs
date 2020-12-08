@@ -16,7 +16,7 @@ day2 = do
   let
     sol1  = s1 input
     sol2  = s2 input
-  putStrLn $ (solutions 2 sol1 sol2)
+  solutions 2 sol1 sol2
 
 parseInput :: IO (Either String [PassInfo])
 parseInput = do

@@ -2,6 +2,7 @@
 {-# language BangPatterns #-}
 {-# language UnboxedTuples #-}
 {-# language MagicHash #-}
+{-# language OverloadedStrings #-}
 module Common where
 
 
@@ -21,6 +22,9 @@ import qualified Data.Attoparsec.Text as Text.Parser
 import qualified Data.Char as Char
 import qualified Data.ByteString.Char8 as ByteString
 import Data.Maybe (fromJust)
+import qualified Data.Text as Text
+import qualified Data.Text.IO as Text
+import TextShow
 
 readFileBA :: FilePath -> IO ByteArray
 readFileBA f = 
@@ -79,12 +83,13 @@ myfoldl' f v (PS fp off len) =
                   | otherwise = do x <- peek p
                                    go (f z x) (p `plusPtr` 1) q
 
-solutions :: (Show a, Show b) => Int -> a -> b -> String
-solutions n s1 s2 = unlines $
-  ["~~~ Day " <> show n <> "~~~"
+solutions :: (TextShow a, TextShow b) => Int -> a -> b -> IO ()
+solutions n s1 s2 = Text.putStrLn $
+  Text.unlines $
+  ["~~~ Day " <> showt n <> "~~~"
   ,""
-  ,"solution 1: " <> (show s1)
-  ,"solution 2: " <> (show s2)
+  ,"solution 1: " <> (showt s1)
+  ,"solution 2: " <> (showt s2)
   ]
 
 
