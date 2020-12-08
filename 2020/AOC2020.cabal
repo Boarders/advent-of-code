@@ -66,6 +66,8 @@ Library Days
     , stringsearch
     , graphviz
     , filepath
+    , text-show
+    , vector-th-unbox
 
 
   exposed-modules:
@@ -77,7 +79,7 @@ Library Days
       Day5
       Day6
       Day7
- --     Day8
+      Day8
  --     Day9
  --     Day10
  --     Day11

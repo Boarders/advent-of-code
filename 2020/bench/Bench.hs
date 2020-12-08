@@ -9,6 +9,8 @@ import qualified Day4 as Day4
 import qualified Day5 as Day5
 import qualified Day6 as Day6
 
+import qualified Day8 as Day8
+
 
 
 
@@ -41,6 +43,7 @@ day5 = Criterion.env Day5.parseInput $ \ ~d ->
   Criterion.bgroup "day5"
     [ Criterion.bench "sol1"    $ Criterion.nf Day5.s1 d
     , Criterion.bench "sol2"    $ Criterion.nf Day5.s2 d
+    , Criterion.bench "total"   $ Criterion.nfIO Day5.day5
     ]
 
 
@@ -50,11 +53,17 @@ day6 = Criterion.env Day6.parseInput $ \ ~d ->
     , Criterion.bench "sol2"    $ Criterion.nf Day6.s2 d
     ]
 
+day8 = Criterion.env Day8.parseInput $ \ ~d ->
+  Criterion.bgroup "day8"
+    [ Criterion.bench "sol1"    $ Criterion.nf Day8.s1 d
+    , Criterion.bench "sol2"    $ Criterion.nf Day8.s2 d
+    ] 
+
 main :: IO ()
 main = do
   Criterion.defaultMain . pure $
     Criterion.bgroup "advent of code"
-    [ day6
+    [ day8
 --      day1
 --    , day2
 --    , day3
