@@ -86,7 +86,7 @@ myfoldl' f v (PS fp off len) =
 solutions :: (TextShow a, TextShow b) => Int -> a -> b -> IO ()
 solutions n s1 s2 = Text.putStrLn $
   Text.unlines $
-  ["~~~ Day " <> showt n <> "~~~"
+  ["~~~ Day " <> showt n <> " ~~~"
   ,""
   ,"solution 1: " <> (showt s1)
   ,"solution 2: " <> (showt s2)
