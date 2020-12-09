@@ -5,6 +5,7 @@
 {-# language TemplateHaskell #-}
 {-# language MultiParamTypeClasses #-}
 {-# language TypeFamilies #-}
+{-# language BangPatterns #-}
 module Day8 where
 
 import qualified Data.ByteString.Char8 as ByteString
@@ -15,7 +16,6 @@ import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as Vector
 import Data.Vector.Unboxed.Mutable (MVector)
 import qualified Data.Vector.Unboxed.Mutable as Mutable
-import Data.Char (isSpace)
 import qualified Data.IntSet as IntSet
 import Data.IntSet (IntSet)
 import qualified Data.Text as Text
@@ -65,8 +65,8 @@ instance NFData Instr
 
 derivingUnbox "Instr"
     [t|  Instr -> (Int, Int) |]
-    [| \(Instr o p) ->  (fromEnum o, p) |]
-    [| \ (o, p) ->  Instr (toEnum o) p |]
+    [| \ (Instr o p) ->  (fromEnum o, p) |]
+    [| \ (o, p) ->  Instr (toEnum o) p   |]
 
 day8 :: IO ()
 day8 = do
@@ -76,6 +76,15 @@ day8 = do
     sol2 = s2 input
   solutions 8 sol1 sol2
 
+day8' :: IO (Int, Int)
+day8' = do
+  input <- parseInput
+  let
+    sol1 = s1 input
+    sol2 = s2 input
+  pure (sol1, sol2)
+
+  
 
 flipInstr :: Instr -> Instr
 flipInstr (Instr Nop n) = Instr Jmp n
@@ -84,22 +93,25 @@ flipInstr instr = instr
 
 data FinalState = Halt Int |  Loop Int
 
+toInt :: FinalState -> Int
+toInt (Halt n) = n
+toInt (Loop n) = n
+
 parseInput :: IO (Vector Instr)
 parseInput = do
   bs <- ByteString.readFile "input/day8.dat"
- -- let bs = test
-  let parsedOp = traverse (Parser.parseOnly parseInstr) (ByteString.lines bs)
-  case parsedOp of
-    Left str -> error str
+  let parsedM = traverse (Parser.parseOnly parseInstr) (ByteString.lines bs)
+  case parsedM of
+    Left  str     -> error str
     Right parsed -> do
-      let instrs = Vector.fromList parsed
+      let instrs = Vector.fromList $ parsed
       pure instrs
 
 parseInstr :: Parser Instr
 parseInstr = do
-  instr <- Parser.takeWhile (not . isSpace)
-  void Parser.space
-  ds    <- Parser.signed Parser.decimal
+  instr <- Parser.takeTill (== ' ')
+  void (Parser.space)
+  ds <- Parser.signed Parser.decimal
   case instr of
     "nop" -> pure $ Instr Nop ds
     "acc" -> pure $ Instr Acc ds
@@ -109,19 +121,19 @@ parseInstr = do
 s1 :: Vector Instr -> Int
 s1 instrs = runST $ do
   mInstrs <- Vector.unsafeThaw instrs
-  Loop acc <- run mInstrs
-  pure acc
+  toInt <$> run mInstrs
+
 
 run :: forall s . MVector s Instr -> ST s FinalState
-run mInstrs = go mInstrs  0 0 mempty
+run !mInstrs = go mInstrs  0 0 mempty
   where
-    len = Mutable.length mInstrs
+    !len = Mutable.length mInstrs
     go :: MVector s Instr -> Int -> Int -> IntSet -> ST s FinalState
-    go mv i acc s
+    go !mv !i !acc !s
       | i >= len = pure (Halt acc)
       | i `IntSet.member` s = pure (Loop acc)
       | otherwise = do
-          nextInstr <- Mutable.read mv i
+          nextInstr <- Mutable.unsafeRead mv i
           case nextInstr of
             Instr Nop _ -> go mv (i + 1) acc       (IntSet.insert i s)
             Instr Acc a -> go mv (i + 1) (acc + a) (IntSet.insert i s)
@@ -132,12 +144,12 @@ flipNext  :: forall s .  MVector s Instr -> Int -> ST s Int
 flipNext mv currInd = go currInd
   where
     go :: Int -> ST s Int
-    go n = do
-      nextInstr <- Mutable.read mv n
+    go !n = do
+      nextInstr <- Mutable.unsafeRead mv n
       case nextInstr of
         Instr Acc _ -> go (n + 1)
         _ -> do
-          Mutable.modify mv flipInstr n
+          Mutable.unsafeModify mv flipInstr n
           pure n
 
 s2 :: Vector Instr -> Int
@@ -146,11 +158,11 @@ s2 instrs = runST $ do
   go mInstrs 0
   where
     go :: MVector s Instr -> Int -> ST s Int
-    go mv ind = do
+    go mv !ind = do
       n'  <- flipNext mv ind
       res <- run mv
       case res of
         Halt acc -> pure acc
         Loop _   -> do
-          Mutable.modify mv flipInstr n'
+          Mutable.unsafeModify mv flipInstr n'
           go mv (n' + 1)
