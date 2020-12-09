@@ -76,7 +76,7 @@ part2 :: Vector Int -> Int -> Int
 part2 vs target = (\ ~(x, y) -> x + y) . minMax $ contiguous
   where
     contiguous = Vector.slice loInd (hiInd - loInd) vs
-    (loInd, hiInd) = findBounds 0 0
+    (loInd, hiInd) = findBounds 0 1
     sums = Vector.scanl' (+) 0 vs
     findBounds loI hiI | hiLo < target  = findBounds loI (hiI + 1)
                        | hiLo > target  = findBounds (loI + 1) hiI
