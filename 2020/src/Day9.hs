@@ -22,7 +22,6 @@ day9 = do
     sol1, sol2 :: Int
     sol1 = s1 inp
     sol2 = s2 sol1 inp
-  print $ bsToInt "-10000"
   solutions 9 sol1 sol2
 
 
@@ -39,7 +38,6 @@ day9' = do
 parseInput :: IO (Vector Int)
 parseInput = do
   bs <- ByteString.readFile "input/day9.dat"
---  let bs = test
   let vs = Vector.fromList . fmap bsToInt . ByteString.lines $ bs
   pure $ vs
 
