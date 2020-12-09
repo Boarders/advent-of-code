@@ -16,6 +16,7 @@ import Day9
 import Control.Concurrent.ParallelIO.Global
 import Control.Monad
 import Common (solutions)
+import Data.Foldable (traverse_)
 
 {-
 import Day10
@@ -38,8 +39,19 @@ import Day25
 
 main :: IO ()
 main = do
-
+  sequence_
+    [ day1
+    , day2
+    , day3
+    , day4
+    , day5
+    , day6
+    , day7
+    , day8
+    , day9
+    ]
 --An attempt was made
+{-
   rs <- parallel
           [ day1'
           , day2'
