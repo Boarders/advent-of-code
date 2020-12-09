@@ -9,7 +9,7 @@
 module Day8 where
 
 import qualified Data.ByteString.Char8 as ByteString
-import Common (solutions)
+import Common (solutions, bsToInt)
 import qualified Data.Attoparsec.ByteString.Char8 as Parser
 import Data.Attoparsec.ByteString.Char8 (Parser)
 import Data.Vector.Unboxed (Vector)
@@ -84,8 +84,6 @@ day8' = do
     sol2 = s2 input
   pure (sol1, sol2)
 
-  
-
 flipInstr :: Instr -> Instr
 flipInstr (Instr Nop n) = Instr Jmp n
 flipInstr (Instr Jmp n) = Instr Nop n
@@ -97,6 +95,14 @@ toInt :: FinalState -> Int
 toInt (Halt n) = n
 toInt (Loop n) = n
 
+
+parseInput :: IO (Vector Instr)
+parseInput = do
+  bs <- ByteString.readFile "input/day8.dat"
+  let parsedM = fmap parseInstr (ByteString.lines bs)
+  pure $ Vector.fromList parsedM
+
+{-
 parseInput :: IO (Vector Instr)
 parseInput = do
   bs <- ByteString.readFile "input/day8.dat"
@@ -106,7 +112,18 @@ parseInput = do
     Right parsed -> do
       let instrs = Vector.fromList $ parsed
       pure instrs
+-}
+parseInstr :: ByteString.ByteString -> Instr
+parseInstr bs =
+  let instr : numBS : _ = ByteString.words bs in
+  let ds = bsToInt numBS in
+  case instr of
+    "nop" -> Instr Nop ds
+    "acc" -> Instr Acc ds
+    "jmp" -> Instr Jmp ds
+    other -> error $ "parseInstr: Instruction not implemented " <> (ByteString.unpack other)
 
+{-
 parseInstr :: Parser Instr
 parseInstr = do
   instr <- Parser.takeTill (== ' ')
@@ -117,7 +134,7 @@ parseInstr = do
     "acc" -> pure $ Instr Acc ds
     "jmp" -> pure $ Instr Jmp ds
     other -> error $ "parseInstr: Instruction not implemented " <> (ByteString.unpack other)
-
+-}
 s1 :: Vector Instr -> Int
 s1 instrs = runST $ do
   mInstrs <- Vector.unsafeThaw instrs
