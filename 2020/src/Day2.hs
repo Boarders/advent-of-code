@@ -18,12 +18,24 @@ day2 = do
     sol2  = s2 input
   solutions 2 sol1 sol2
 
-parseInput :: IO (Either String [PassInfo])
+
+day2' :: IO (Int, Int)
+day2' = do
+  input <- parseInput
+  let
+    sol1  = s1 input
+    sol2  = s2 input
+  pure (sol1, sol2)
+
+
+parseInput :: IO [PassInfo]
 parseInput = do
   bs <- ByteString.readFile "input/day2.dat"
   let
     input = traverse (parseOnly parsePassInfo) (ByteString.lines bs)
-  pure input
+  case input of
+    Left err -> error err
+    Right ps -> pure ps
 
 
 data Range = Range
@@ -54,8 +66,8 @@ parsePassInfo = do
   pass <- takeByteString
   pure (PassInfo (Range l h) tgt pass)
 
-s1 :: Either String [PassInfo] -> Either String Int
-s1 = fmap (length . filter valid1)
+s1 :: [PassInfo] -> Int
+s1 = length . filter valid1
 
 valid1 :: PassInfo -> Bool
 valid1 (PassInfo (Range l h) tgt pass) =
@@ -63,8 +75,8 @@ valid1 (PassInfo (Range l h) tgt pass) =
   let c = countLetter pass tgt in
     (l <= c && c <= h)
 
-s2 :: Either String [PassInfo] -> Either String Int
-s2 = fmap (length . filter valid2)
+s2 :: [PassInfo] -> Int
+s2 = length . filter valid2
 
 valid2 :: PassInfo -> Bool
 valid2 (PassInfo range tgt pass) = occursOnce pass range tgt

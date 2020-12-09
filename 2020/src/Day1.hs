@@ -14,6 +14,14 @@ day1 = do
     sol2 = s2 input
   solutions 1 sol1 sol2
 
+day1' :: IO (Int, Int)
+day1' = do
+  input <- parseInput
+  let
+    sol1 = s1 input
+    sol2 = s2 input
+  pure (sol1, sol2)
+
 
 parseInput :: IO [Int]
 parseInput = do

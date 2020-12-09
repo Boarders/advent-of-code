@@ -15,7 +15,7 @@ executable aoc
   ghc-options:
     -threaded
     -rtsopts
-    -O2
+    -O3
     -with-rtsopts=-T
     -Wall
     -Wincomplete-patterns
@@ -28,6 +28,7 @@ executable aoc
   build-depends:
       base
     , Days
+    , parallel-io
 
 Library Days
 

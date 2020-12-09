@@ -24,6 +24,15 @@ day4 = do
     sol2  = s2 input
   solutions 4 sol1 sol2
 
+
+day4' :: IO (Int, Int)
+day4' = do
+  input <- parseInput
+  let
+    sol1  = s1 input
+    sol2  = s2 input
+  pure (sol1, sol2)
+
 parseInput :: IO [HashMap Text Text]
 parseInput = do
   txt <- Text.readFile "input/day4.dat"

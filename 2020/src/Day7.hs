@@ -29,7 +29,17 @@ day7 = do
   let
     sol1  = s1 input
     sol2  = s2 input
-  solutions 2 sol1 sol2
+  solutions 7 sol1 sol2
+
+
+day7' :: IO (Int, Int)
+day7' = do
+  input <- parseInput
+  let
+    sol1  = s1 input
+    sol2  = s2 input
+  pure (sol1, sol2)
+
 
 
 

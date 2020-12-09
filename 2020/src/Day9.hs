@@ -24,7 +24,6 @@ day9 = do
     sol2 = s2 sol1 inp
   solutions 9 sol1 sol2
 
-
 day9' :: IO (Int, Int)
 day9' = do
   inp <- parseInput

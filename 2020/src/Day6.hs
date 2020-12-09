@@ -18,6 +18,15 @@ day6 = do
   solutions 6 sol1 sol2
 
 
+day6' :: IO (Int, Int)
+day6' = do
+  input <- parseInput
+  let
+    sol1  = s1 input
+    sol2  = s2 input
+  pure (sol1, sol2)
+
+
 parseInput :: IO [[ByteString]]
 parseInput = do
   bs <- ByteString.readFile "input/day6.dat"
