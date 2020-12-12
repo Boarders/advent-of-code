@@ -6,7 +6,7 @@
 {-# language MultiParamTypeClasses #-}
 {-# language TypeFamilies #-}
 {-# language BangPatterns #-}
-{-# language Strict #-}
+--{-# language Strict #-}
 module Day11 where
 
 import qualified Data.ByteString.Char8 as ByteString
@@ -26,10 +26,12 @@ import qualified VectorBuilder.Builder as Builder
 import qualified VectorBuilder.Vector  as Builder
 import Control.Arrow ((&&&))
 import Text.Builder as TextBuilder
-import Data.Foldable(foldrM, traverse_)
+import Data.Foldable(traverse_)
 import Data.Monoid (All(..))
-import Control.Monad (filterM)
 import Data.Word (Word8)
+import Data.Coerce
+
+import qualified Data.Vector.Primitive as Primitive
 
 
 data Position =
@@ -38,12 +40,20 @@ data Position =
   | Floor
   deriving (Eq, Generic, Show)
 
+data Point = Point
+  { xCoord :: !Int
+  , yCoord :: !Int
+  }
+  deriving (Eq)
+
+{-# inline fromW8 #-}
 fromW8 :: Word8 -> Position
 fromW8 n | n == 0 = Empty
          | n == 1 = Occupied
          | n == 2 = Floor
-         | otherwise = errorWithoutStackTrace "Enum.Op.toEnum: bad argument"
+         | otherwise = errorWithoutStackTrace "Enum.fromW8: bad argument"
 
+{-# inline toW8 #-}
 toW8 :: Position -> Word8
 toW8 = \case
     Empty    -> 0
@@ -66,8 +76,13 @@ asciiPos = \case
 
 derivingUnbox "Position"
     [t|  Position -> Word8  |]
-    [| \ p ->  toW8   p     |]
-    [| \ p ->  fromW8 p     |]
+    [| toW8     |]
+    [| fromW8   |]
+
+derivingUnbox "Point"
+    [t|  Point -> (Int, Int)  |]
+    [| \ (Point x y) ->  (x,y)   |]
+    [| \ (x, y) ->  Point x y  |]
 
 rowsToText :: Int -> Vector Position -> Text.Text
 rowsToText r v =
@@ -99,7 +114,7 @@ parseInput :: IO (Int, Vector Position)
 parseInput = do
   bs <- ByteString.readFile "input/day11.dat"
   let
-    (rowS, rowB) = (ByteString.length . head) &&& (foldMap buildRow) $ (ByteString.lines bs)
+    (!rowS, rowB) = (ByteString.length . head) &&& (foldMap buildRow) $ (ByteString.lines bs)
   pure $ (rowS, Builder.build rowB)
 
 buildRow :: ByteString -> Builder.Builder Position
@@ -119,31 +134,50 @@ s2 :: (Int, Vector Position) -> Int
 s2 (r, v) = countOccupied (runGrid2 r v)
 
 
-computeIndex :: Int -> (Int, Int) -> Int
-computeIndex r (i,j) = r * i + j
+computeIndex :: Int -> Point -> Int
+computeIndex r (Point i j) = r * i + j
+{-# INLINE computeIndex #-}
 
-index :: (Int, Int) -> (Int, MVector s Position) -> ST s (Maybe Position)
-index p@(i, j) (r, mv)
+index :: Int -> Point ->  MVector s Position -> ST s (Maybe Position)
+index !r !p@(Point i j) !mv
     | i < 0 || j < 0 || i >= cols || j >= r = pure Nothing
-    | otherwise = Just <$> Mutable.read mv ind
+    | otherwise = Just <$> Mutable.unsafeRead mv ind
   where
-  cols = Mutable.length mv `div` r
-  ind  = computeIndex r p
+  !cols = Mutable.length mv `div` r
+  !ind  = computeIndex r p
+{-# INLINE index #-}
+
 
 eqGrid :: MVector s Position -> MVector s Position -> ST s Bool
 eqGrid mv1 mv2 = do
   v1  <- Vector.unsafeFreeze mv1
   v2  <- Vector.unsafeFreeze mv2
   pure (v1 == v2)
+{-# INLINE eqGrid #-}
 
+{-
+eqGrid :: MVector s Position -> MVector s Position -> Bool
+eqGrid = coerce eqWord8Prim
+{-# INLINE eqGrid #-}
+
+eqWord8Prim :: Primitive.MVector s Word8 -> Primitive.MVector s Word8 -> Bool
+eqWord8Prim (Primitive.MVector _ _ !mba1) (Primitive.MVector _ _ !mba2) =
+  mba1 == mba2
+
+
+eqGrid :: MVector s Position -> MVector s Position -> ST s Bool
+eqGrid (Primitive.MVector off1 len1 mba1) (Primitive.MVector off2 len2 mba2) =
+  pure $  mba1 == mba2
+{-# INLINE eqGrid #-}
+-}
 countOccupied :: Vector Position -> Int
 countOccupied = Vector.foldl' (\acc x -> acc + (fromEnum . (== Occupied) $ x)) 0
 
 
 runGrid :: Int -> Vector Position -> Vector Position
-runGrid r inputV = runST $ do
-  oldMV <- Vector.thaw inputV
-  newMV <- Mutable.clone oldMV
+runGrid !r !inputV = runST $ do
+  !oldMV <- Vector.thaw inputV
+  !newMV <- Mutable.clone oldMV
   updateUntilEq r oldMV newMV
   Vector.freeze newMV
 
@@ -152,14 +186,14 @@ updateUntilEq
   -> MVector s Position
   -> MVector s Position
   -> ST s ()
-updateUntilEq r oldMV newMV = do
+updateUntilEq !r !oldMV !newMV = do
   updateAll r oldMV newMV
   eq <- eqGrid oldMV newMV
   if eq
     then pure ()
     else
       do
-        Mutable.copy oldMV newMV
+        Mutable.unsafeCopy oldMV newMV
         updateUntilEq r oldMV newMV
 
 updateAll
@@ -167,45 +201,44 @@ updateAll
   -> MVector s Position
   -> MVector s Position
   -> ST s ()
-updateAll r oldMV newMV = do
-  let len  = Mutable.length oldMV
-  let inds = [(i,j) | i <- [0..(div len r) - 1], j <- [0..(r - 1)]]
-  traverse_ (update r oldMV newMV) inds
+updateAll !r oldMV newMV = do
+  let !len  = Mutable.length oldMV
+  traverse_ (update r oldMV newMV) [Point i j | i <- [0..(div len r) - 1], j <- [0..(r - 1)]]
 
 update
   :: forall s .
      Int 
   -> MVector s Position
   -> MVector s Position
-  -> (Int, Int)
+  -> Point
   -> ST s ()
-update r oldMV newMV ind@(i,j) = do
-  posM <- index  (i,j) (r, oldMV)
+update !r !oldMV !newMV !ind = do
+  !posM <- index r ind oldMV
   case posM of
-    Nothing -> error "update: internal index error"
-    Just pos ->
+--    Nothing -> error "update: internal index error"
+    ~(Just pos) ->
       case pos of
         Empty -> do
-          allUnoccupied <- foldrM (unoccupied ind) mempty dirs
+          !allUnoccupied <- foldrM (unoccupied ind) mempty dirs
           if getAll allUnoccupied
-            then Mutable.write newMV vInd Occupied
+            then Mutable.unsafeWrite newMV vInd Occupied
             else pure ()
         Occupied -> do
-          someOccupied <- (>= 4) . Prelude.length <$> filterM (occupied ind) dirs
+          someOccupied <- (>= 4) . Vector.length <$> Vector.filterM (occupied ind) dirs
           if someOccupied
-            then Mutable.write newMV vInd Empty >> pure ()
+            then Mutable.unsafeWrite newMV vInd Empty >> pure ()
             else pure ()
         _ -> pure ()
   where
-    vInd = computeIndex r ind
-    unoccupied :: (Int, Int) -> (Int, Int) -> All -> ST s All
-    unoccupied p dir allB = do
-      pos <- index (addP p dir) (r, oldMV)
+    !vInd = computeIndex r ind
+    unoccupied :: Point -> Point -> All -> ST s All
+    unoccupied !p !dir allB = do
+      !pos <- index r (addP p dir) oldMV
       pure (All (pos /= Just Occupied) <> allB)
 
-    occupied :: (Int, Int) -> (Int, Int) -> ST s Bool
-    occupied p dir = do
-      pos <- index (addP p dir) (r, oldMV)
+    occupied :: Point -> Point -> ST s Bool
+    occupied !p !dir = do
+      !pos <- index r (addP p dir) oldMV
       pure (pos == Just Occupied)
 
 
@@ -238,7 +271,7 @@ updateAll2
   -> ST s ()
 updateAll2 r oldMV newMV = do
   let len  = Mutable.length oldMV
-  let inds = [(i,j) | i <- [0..(div len r) - 1], j <- [0..(r - 1)]]
+  let inds = [Point i j | i <- [0..(div len r) - 1], j <- [0..(r - 1)]]
   traverse_ (update2 r oldMV newMV) inds
 
 update2
@@ -246,12 +279,12 @@ update2
      Int 
   -> MVector s Position
   -> MVector s Position
-  -> (Int, Int)
+  -> Point
   -> ST s ()
-update2 r oldMV newMV ind@(i,j) = do
-  posM <- index  (i,j) (r, oldMV)
+update2 r oldMV newMV ind = do
+  posM <- index r ind oldMV
   case posM of
-    Nothing -> error "update: internal index error"
+--    Nothing -> error "update: internal index error"
     Just pos ->
       case pos of
         Empty -> do
@@ -260,33 +293,42 @@ update2 r oldMV newMV ind@(i,j) = do
             then Mutable.write newMV vInd Occupied
             else pure ()
         Occupied -> do
-          someOccupied <- (>= 5) . Prelude.length <$> filterM (occupied ind) dirs
+          someOccupied <- (>= 5) . Vector.length <$> Vector.filterM (occupied ind) dirs
           if someOccupied
             then Mutable.write newMV vInd Empty >> pure ()
             else pure ()
         _ -> pure ()
   where
     vInd = computeIndex r ind
-    unoccupied :: (Int, Int) -> (Int, Int) -> All -> ST s All
+    unoccupied :: Point -> Point -> All -> ST s All
     unoccupied p dir allB = do
       occ <- occupiedRay r (addP p dir) dir oldMV
       pure (All (not occ) <> allB)
 
-    occupied :: (Int, Int) -> (Int, Int) -> ST s Bool
+    occupied :: Point -> Point -> ST s Bool
     occupied p dir = occupiedRay r (addP p dir) dir oldMV
 
 
-occupiedRay :: Int -> (Int, Int) -> (Int, Int) -> MVector s Position -> ST s Bool
+occupiedRay :: Int -> Point -> Point -> MVector s Position -> ST s Bool
 occupiedRay r p dir mv = do
-  pos <- index p (r, mv)
+  pos <- index r p mv
   case pos of
     Nothing    -> pure False
     Just Floor -> occupiedRay r (addP p dir) dir mv
     Just seat  -> pure (seat == Occupied)
     
       
-addP :: (Int, Int) -> (Int, Int) -> (Int, Int)
-addP (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+addP :: Point -> Point -> Point
+addP (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)
 
-dirs :: [(Int, Int)]
-dirs = [(i, j) | i <- [-1..1], j <- [-1..1], (i, j) /= (0,0)]
+
+dirs :: Vector Point
+dirs = Vector.fromList [Point i j | i <- [-1..1], j <- [-1..1], (i, j) /= (0,0)]
+
+foldrM :: forall a b m . (Vector.Unbox a, Monad m) => (a -> b -> m b) -> b -> Vector a -> m b
+foldrM f z0 xs = Vector.foldr c (pure z0) xs
+  -- See Note [List fusion and continuations in 'c']
+  where
+    c :: a -> m b -> m b
+    c a mb = mb >>= f a
+    {-# INLINE c #-}
