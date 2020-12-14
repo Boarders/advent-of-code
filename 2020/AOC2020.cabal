@@ -15,7 +15,7 @@ executable aoc
   ghc-options:
     -threaded
     -rtsopts
-    -O3
+    -O2
     -with-rtsopts=-T
     -Wall
     -Wincomplete-patterns
@@ -39,6 +39,8 @@ Library Days
     -Wall
     -Wincomplete-patterns
     -fobject-code
+    -fllvm
+
 
 
   hs-source-dirs:
@@ -69,6 +71,10 @@ Library Days
     , filepath
     , text-show
     , vector-th-unbox
+    , vector-algorithms
+    , vector-builder
+    , text-builder
+    , massiv
 
 
   exposed-modules:
@@ -82,9 +88,10 @@ Library Days
       Day7
       Day8
       Day9
- --     Day10
- --     Day11
- --     Day12
+      Day10
+      Day11
+      Day11m
+      Day12
  --     Day13
  --     Day14
  --     Day15
@@ -120,6 +127,7 @@ benchmark bench
     -O2
     -Wall
     -Wincomplete-patterns
+    
 
   hs-source-dirs:
     bench
