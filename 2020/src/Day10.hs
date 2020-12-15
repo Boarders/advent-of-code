@@ -1,5 +1,6 @@
 {-# language ScopedTypeVariables #-}
 {-# language OverloadedStrings #-}
+{-# language BangPatterns #-}
 
 module Day10 where
 
@@ -98,10 +99,10 @@ paths v g =
     . Vector.take 3
     $ v
   where
-    highest = Vector.last v + 3
-    intMap  = IntMap.fromSet i (IntMap.keysSet g)
-    i :: Int -> Int
-    i ind | highest - ind <= 3 = 1
+    !highest = Vector.last v + 3
+    !intMap  = IntMap.fromSet pathsFromNode (IntMap.keysSet g)
+    pathsFromNode :: Int -> Int
+    pathsFromNode !ind | highest - ind <= 3 = 1
           | otherwise =
               Vector.foldl' (\acc x -> acc + (intMap IntMap.! x)) 0 (g IntMap.! ind)
     
