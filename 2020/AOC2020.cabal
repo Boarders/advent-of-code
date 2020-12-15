@@ -46,6 +46,7 @@ Library Days
 
   build-depends:
       base
+    , arithmoi
     , bytestring
     , containers >= 0.6.4
     , text
