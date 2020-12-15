@@ -1,6 +1,5 @@
 {-# language BangPatterns #-}
 {-# language TypeApplications #-}
-{-# language Strict #-}
 
 module Day15 where
 
@@ -19,7 +18,6 @@ day15 = do
     sol2 = s2 inp
   solutions 15 sol1 sol2
 
-
 day15' :: IO (Int, Int)
 day15' = do
   inp <- parseInput
@@ -33,10 +31,8 @@ parseInput = do
 s1 :: [(Int,  Int)] -> Int
 s1 inp = runGame 2020 inp 0
 
-
 s2 :: [(Int, Int)] -> Int
 s2 inp = runGame 30000000 inp 0
-
 
 runGame :: Int -> [(Int, Int)] -> Int -> Int
 runGame !targ !inp !lastInput = fromIntegral @Int32 @Int $ runST $ do
