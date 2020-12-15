@@ -38,7 +38,6 @@ Library Days
     -O2
     -Wall
     -Wincomplete-patterns
-    -fobject-code
     -fllvm
 
   hs-source-dirs:
