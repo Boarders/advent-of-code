@@ -8,10 +8,8 @@
 {-# language BangPatterns #-}
 module Day8 where
 
-import qualified Data.ByteString.Char8 as ByteString
 import Common (solutions, bsToInt)
-import qualified Data.Attoparsec.ByteString.Char8 as Parser
-import Data.Attoparsec.ByteString.Char8 (Parser)
+import qualified Data.ByteString.Char8 as ByteString
 import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as Vector
 import Data.Vector.Unboxed.Mutable (MVector)
@@ -20,7 +18,6 @@ import qualified Data.IntSet as IntSet
 import Data.IntSet (IntSet)
 import qualified Data.Text as Text
 import TextShow (TextShow(..))
-import Data.Functor (void)
 import Control.Monad.ST
 
 import GHC.Generics (Generic)
