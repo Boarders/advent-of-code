@@ -1,5 +1,6 @@
 {-# language BangPatterns #-}
 {-# language TypeApplications #-}
+{-# language Strict #-}
 
 module Day15 where
 
@@ -38,10 +39,10 @@ s2 inp = runGame 30000000 inp 0
 
 
 runGame :: Int -> [(Int, Int)] -> Int -> Int
-runGame targ inp lastInput = fromIntegral @Int32 @Int $ runST $ do
+runGame !targ !inp !lastInput = fromIntegral @Int32 @Int $ runST $ do
   prim <- Array.newPrimArray targ
   Array.setPrimArray prim 0 targ 0
-  for_ inp $ \(v, t) -> do
+  for_ inp $ \(!v, !t) -> do
     Array.writePrimArray prim v (fromIntegral t)
   go prim (fromIntegral lastInput) 7
   where
