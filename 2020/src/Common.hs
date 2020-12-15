@@ -25,6 +25,8 @@ import Data.Maybe (fromJust)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text
 import TextShow
+import Numeric (showIntAtBase)
+import Data.Char (intToDigit)
 
 readFileBA :: FilePath -> IO ByteArray
 readFileBA f = 
@@ -147,3 +149,10 @@ intParser = do
 
 bsToInt :: ByteString -> Int
 bsToInt = fst . fromJust . ByteString.readInt
+
+bsToInteger :: ByteString -> Integer
+bsToInteger = fst . fromJust . ByteString.readInteger
+
+
+showBits :: Word -> String
+showBits n = showIntAtBase 2 intToDigit n ""
