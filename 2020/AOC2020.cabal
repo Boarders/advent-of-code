@@ -1,7 +1,7 @@
 cabal-version:      3.0
 category:           Languages
 build-type:         Simple
-name:               Day3
+name:               AOC
 synopsis:           Advent of Code 2020
 version:            0.1.0
 
@@ -41,17 +41,13 @@ Library Days
     -fobject-code
     -fllvm
 
-
-
   hs-source-dirs:
     src/
 
   build-depends:
       base
     , bytestring
-    , containers
-    , lens
-    , mtl
+    , containers >= 0.6.4
     , text
     , vector
     , primitive
@@ -63,7 +59,7 @@ Library Days
     , matrices
     , megaparsec
     , attoparsec
-    , parallel
+    , bitvec
     , deepseq
     , bitvec
     , stringsearch
@@ -93,7 +89,7 @@ Library Days
       Day11m
       Day12
  --     Day13
- --     Day14
+      Day14
  --     Day15
  --     Day16
  --     Day17
@@ -136,13 +132,6 @@ benchmark bench
     , base
     , criterion
     , Days
-    , bytestring
-    , primitive
-    , deepseq
-    , vector
-    , containers
-  
-   
     
 
   other-modules:
