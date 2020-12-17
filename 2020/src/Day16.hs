@@ -100,7 +100,7 @@ getSolution v = runST $ do
   sortBy (\ n m -> compare (popCount . snd $ n) (popCount . snd $ m)) mv
   go 0 0 mv
   for_ [0..(len - 1)] $ \i ->
-    Mutable.modify mv (\(n, s) -> (n , findBitSet s)) i
+    Mutable.modify mv (\(n, s) -> (n , countTrailingZeros s)) i
   v <- Vector.unsafeFreeze mv   
   pure v
   where
@@ -112,12 +112,9 @@ getSolution v = runST $ do
           !possible <- fmap snd (Mutable.read mv ind)
           let !sol  = possible `xor` acc
           let !acc' = acc .|. sol
-          Mutable.modify mv (\(n, _) -> (n, sol)) ind
+          Mutable.modify mv (second (const sol)) ind
           go (ind + 1) acc' mv
 
-
-findBitSet :: Int -> Int
-findBitSet b = countTrailingZeros b
 
 inRange :: Int -> (Int, Range) -> Bool
 inRange n (_, (Range l h)) = l <= n && n <= h
@@ -125,6 +122,7 @@ inRange n (_, (Range l h)) = l <= n && n <= h
 inRanges :: Int -> Vector (Int, Range) -> Bool
 inRanges n = Vector.any (inRange n)
 
+{-# inline validRanges #-}
 validRanges :: Int -> Vector (Int, Range) -> Vector Int
 validRanges n = Vector.map fst . Vector.filter (inRange n)
 
@@ -138,7 +136,7 @@ s1 (ranges, _, tickets) =
 
 s2 :: (Vector (Int, Range), Vector Int, [Vector Int]) -> Int
 s2 (ranges, ticket, tickets) =
-      Vector.foldl' (\acc (!i,_) -> acc * ticket Vector.! i) 1
+      Vector.foldl' (\acc i -> acc * ticket Vector.! (fst i)) 1
     . Vector.filter (\x -> snd x <= 5)
     . getSolution
     . foldl1' (Vector.zipWith (.&.))
