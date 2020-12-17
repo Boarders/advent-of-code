@@ -71,6 +71,8 @@ Library Days
     , vector-builder
     , text-builder
     , massiv
+    , IntervalMap
+    , fingertree
 
 
   exposed-modules:
@@ -91,7 +93,7 @@ Library Days
       Day13
       Day14
       Day15
- --     Day16
+      Day16
  --     Day17
  --     Day18
  --     Day19
